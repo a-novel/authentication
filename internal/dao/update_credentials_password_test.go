@@ -13,6 +13,8 @@ import (
 )
 
 func TestUpdateCredentialsPassword(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name string
 
@@ -117,6 +119,8 @@ func TestUpdateCredentialsPassword(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			repository := dao.NewUpdateCredentialsPasswordRepository()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)
