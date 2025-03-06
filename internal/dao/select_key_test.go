@@ -15,6 +15,8 @@ import (
 )
 
 func TestSelectKey(t *testing.T) {
+	t.Parallel()
+
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
 
@@ -109,6 +111,8 @@ func TestSelectKey(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			selectKey := dao.NewSelectKeyRepository()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)

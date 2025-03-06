@@ -14,6 +14,8 @@ import (
 )
 
 func TestInsertShortCode(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now().UTC().Round(time.Second)
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
@@ -281,6 +283,8 @@ func TestInsertShortCode(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			repository := dao.NewInsertShortCodeRepository()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)

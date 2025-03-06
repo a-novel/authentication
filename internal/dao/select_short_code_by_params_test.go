@@ -14,6 +14,8 @@ import (
 )
 
 func TestSelectShortCodeByParams(t *testing.T) {
+	t.Parallel()
+
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
 
@@ -117,6 +119,8 @@ func TestSelectShortCodeByParams(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			repository := dao.NewSelectShortCodeByParamsRepository()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)

@@ -46,11 +46,6 @@ issues:
         - maintidx
         - gocognit
         - tagliatelle
-    # DAO behaves poorly in parallel testing, mainly because each test is done concurrently using its own transaction.
-    - path: dao/(.+)_test.go
-      linters:
-        - tparallel
-        - paralleltest
     - path: cmd/(.+)_test.go
       linters:
         - tparallel
