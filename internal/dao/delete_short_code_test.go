@@ -15,6 +15,8 @@ import (
 )
 
 func TestDeleteShortCode(t *testing.T) {
+	t.Parallel()
+
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	now := time.Now().UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
@@ -161,14 +163,18 @@ func TestDeleteShortCode(t *testing.T) {
 		},
 	}
 
+	repository := dao.NewDeleteShortCodeRepository()
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			selectShortCode := dao.NewDeleteShortCodeRepository()
+			t.Parallel()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)
 			require.NoError(t, err)
 
-			defer func() { _ = commit(false) }()
+			t.Cleanup(func() {
+				require.NoError(t, commit(false))
+			})
 
 			db, err := pgctx.Context(tx)
 			require.NoError(t, err)
@@ -178,7 +184,7 @@ func TestDeleteShortCode(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			key, err := selectShortCode.DeleteShortCode(tx, testCase.data)
+			key, err := repository.DeleteShortCode(tx, testCase.data)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, key)
 		})

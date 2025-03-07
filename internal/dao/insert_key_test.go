@@ -15,6 +15,8 @@ import (
 )
 
 func TestInsertKey(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name       string
 		insertData dao.InsertKeyData
@@ -44,14 +46,18 @@ func TestInsertKey(t *testing.T) {
 		},
 	}
 
+	repository := dao.NewInsertKeyRepository()
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			repository := dao.NewInsertKeyRepository()
+			t.Parallel()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)
 			require.NoError(t, err)
 
-			defer func() { _ = commit(false) }()
+			t.Cleanup(func() {
+				require.NoError(t, commit(false))
+			})
 
 			key, err := repository.InsertKey(tx, testCase.insertData)
 			require.NoError(t, err)
