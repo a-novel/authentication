@@ -13,6 +13,8 @@ import (
 )
 
 func TestExistsCredentialsEmail(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name string
 
@@ -49,14 +51,18 @@ func TestExistsCredentialsEmail(t *testing.T) {
 		},
 	}
 
+	repository := dao.NewExistsCredentialsEmailRepository()
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			selectKey := dao.NewExistsCredentialsEmailRepository()
+			t.Parallel()
 
 			tx, commit, err := pgctx.NewContextTX(ctx, nil)
 			require.NoError(t, err)
 
-			defer func() { _ = commit(false) }()
+			t.Cleanup(func() {
+				require.NoError(t, commit(false))
+			})
 
 			db, err := pgctx.Context(tx)
 			require.NoError(t, err)
@@ -66,7 +72,7 @@ func TestExistsCredentialsEmail(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			key, err := selectKey.ExistsCredentialsEmail(tx, testCase.email)
+			key, err := repository.ExistsCredentialsEmail(tx, testCase.email)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, key)
 		})

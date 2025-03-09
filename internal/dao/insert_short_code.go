@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
-	"github.com/uptrace/bun/driver/pgdriver"
 
 	"github.com/a-novel-kit/context"
 	pgctx "github.com/a-novel-kit/context/pgbun"
@@ -104,6 +103,19 @@ func (repository *InsertShortCodeRepository) InsertShortCode(
 		if err != nil {
 			return nil, NewErrInsertShortCodeRepository(fmt.Errorf("discard old short codes: %w", err))
 		}
+	} else {
+		exists, err := tx.NewSelect().
+			Model((*ShortCodeEntity)(nil)).
+			Where("target = ?", data.Target).
+			Where("usage = ?", data.Usage).
+			Exists(ctx)
+		if err != nil {
+			return nil, NewErrInsertShortCodeRepository(fmt.Errorf("check short code existence: %w", err))
+		}
+
+		if exists {
+			return nil, NewErrInsertShortCodeRepository(ErrShortCodeAlreadyExists)
+		}
 	}
 
 	// Insert the new short code.
@@ -120,11 +132,6 @@ func (repository *InsertShortCodeRepository) InsertShortCode(
 	// Execute query.
 	_, err = tx.NewInsert().Model(newEntity).Returning("*").Exec(ctx)
 	if err != nil {
-		var pgErr pgdriver.Error
-		if errors.As(err, &pgErr) && pgErr.Field('C') == "23505" {
-			return nil, errors.Join(err, ErrShortCodeAlreadyExists)
-		}
-
 		return nil, NewErrInsertShortCodeRepository(fmt.Errorf("insert short code: %w", err))
 	}
 

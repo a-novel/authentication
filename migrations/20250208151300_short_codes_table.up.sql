@@ -33,26 +33,3 @@ CREATE VIEW active_short_codes AS
   FROM short_codes
   WHERE COALESCE(deleted_at, expires_at) >= CLOCK_TIMESTAMP()
 );
-
-/*
-  Prevent insertion if some unexpired short code with the same usage
-  and target already exists.
-  We cannot use an index because unique constraint depends on non-immutable
-  time constraint.
-*/
-CREATE FUNCTION CHECK_UNIQUE_ACTIVE_SHORT_CODES()
-RETURNS trigger AS
-$$
-BEGIN
-  IF EXISTS (SELECT 1 FROM active_short_codes WHERE target = NEW.target AND usage = NEW.usage) THEN
-    RAISE unique_violation USING MESSAGE = 'Short code already exists for this target and usage.';
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER unique_active_short_codes
-BEFORE INSERT
-ON short_codes
-FOR EACH ROW
-EXECUTE FUNCTION CHECK_UNIQUE_ACTIVE_SHORT_CODES();
